@@ -6,7 +6,7 @@ class Flight:
         self.airplane = airplane
         self.flight_number = flight_number
         rows, seats = self.airplane.get_seating_plan()
-        self.seating_plan = [{letter: None for letter in seats} for _ in rows]
+        self.seating_plan = [self.flight_number] + [{letter: None for letter in seats} for _ in rows]
 
     def get_airline(self):
         return self.flight_number[:2]
@@ -17,8 +17,12 @@ class Flight:
     def get_model(self):
         return self.airplane.get_airplane_model()
 
-    def allocate_passenger(self, passenger="Lech K", seat="12C"):
+    def allocate_passenger(self, passenger, seat):
         row, letter = self._parse_seat(seat)
+
+        if self.seating_plan[row][letter] is not None:
+            return ValueError("Already allocated passenger")
+        self.seating_plan[row][letter] = passenger
 
     def _parse_seat(self, seat):
         rows, seats = self.airplane.get_seating_plan()
@@ -36,7 +40,21 @@ class Flight:
         if row not in rows:
             raise ValueError(f"Row number is out of range: {row}")
 
-        return row,letter
+        return row, letter
+
+    def relocate_passenger(self, seat_from, seat_to):
+        row_from, letter_from = self._parse_seat(seat_from)
+
+        if self.seating_plan[row_from][letter_from] is None:
+            raise ValueError(f"Seat is unoccupied")
+
+        row_to, letter_to = self._parse_seat(seat_to)
+        if self.seating_plan[row_to][letter_to] is not None:
+            raise ValueError(f"New seat is occupied")
+
+        self.allocate_passenger(self.seating_plan[row_from][letter_from], seat_to)
+        self.seating_plan[row_from][letter_from] = None
+
 
 class AirPlane:
     def get_seats_no(self):
@@ -78,6 +96,7 @@ f = Flight('LO127', airbus)
 print(boeing.get_seats_no())
 print(airbus.get_seats_no())
 
+f.allocate_passenger(passenger='Jak Srak', seat='24A')
 pp(f.seating_plan)
-
-f.allocate_passenger(passenger='Jak Srak', seat='12A')
+f.relocate_passenger("24A", "12A")
+pp(f.seating_plan)
