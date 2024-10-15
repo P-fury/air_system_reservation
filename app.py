@@ -6,7 +6,7 @@ class Flight:
         self.airplane = airplane
         self.flight_number = flight_number
         rows, seats = self.airplane.get_seating_plan()
-        self.seating_plan = [self.flight_number] + [{letter: None for letter in seats} for _ in rows]
+        self.seating_plan = [None] + [{letter: None for letter in seats} for _ in rows]
 
     def get_airline(self):
         return self.flight_number[:2]
@@ -55,6 +55,26 @@ class Flight:
         self.allocate_passenger(self.seating_plan[row_from][letter_from], seat_to)
         self.seating_plan[row_from][letter_from] = None
 
+    def get_empty_seat(self):
+        return sum(sum(1 for seat in row.values() if seat is None)
+                   for row in self.seating_plan if row is not None)
+
+    def get_passenger_list(self):
+
+        rows, seats = self.airplane.get_seating_plan()
+        for row in rows:
+            for letter in seats:
+                passenger = self.seating_plan[row][letter]
+                if passenger is not None:
+                    yield passenger, f'{row}{letter}'
+
+        # passengers = []
+        # for row in self.seating_plan:
+        #     if row is not None:
+        #         for seat in row.values():
+        #             if seat is not None:
+        #                 passengers.append(seat)
+
 
 class AirPlane:
     def get_seats_no(self):
@@ -93,10 +113,23 @@ f = Flight('LO127', airbus)
 # print(f.get_number())
 # print(f.get_model())
 
-print(boeing.get_seats_no())
-print(airbus.get_seats_no())
+# print(boeing.get_seats_no())
+# print(airbus.get_seats_no())
+#
+# f.allocate_passenger(passenger='Jak Srak', seat='24A')
+# pp(f.seating_plan)
+# f.relocate_passenger("24A", "12A")
+# pp(f.seating_plan)
+#
+# f.get_empty_seat()
 
-f.allocate_passenger(passenger='Jak Srak', seat='24A')
-pp(f.seating_plan)
-f.relocate_passenger("24A", "12A")
-pp(f.seating_plan)
+f_2 = Flight('LO128', boeing)
+print(f_2.get_empty_seat())
+f_2.allocate_passenger(passenger='Jak Mak', seat='24A')
+f_2.allocate_passenger(passenger='Jak Bak', seat='15A')
+print(f_2.get_empty_seat())
+f_2.allocate_passenger(passenger='Zak Bak', seat='15B')
+f_2.allocate_passenger(passenger='Fak Bak', seat='12A')
+print(f_2.get_empty_seat())
+print([passenger for passenger in f_2.get_passenger_list()])
+
